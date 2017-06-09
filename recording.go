@@ -18,8 +18,8 @@ func main() {
   // Setup audio stream
   portaudio.Initialize()
   defer portaudio.Terminate()
-  in := make([]int32, 64)
-  stream, err := portaudio.OpenDefaultStream(1, 0, 44100, len(in), in)
+  in := make([]int16, 64)
+  stream, err := portaudio.OpenDefaultStream(1, 0, 16000, len(in), in)
 	chk(err)
 	defer stream.Close()
   chk(stream.Start())
