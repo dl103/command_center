@@ -36,9 +36,9 @@ func main() {
       return
     default:
 
-      fmt.Println(detector.ReadAndDetect)
+      // fmt.Println(detector.ReadAndDetect)
       // fmt.Println("Flush")
-      // fmt.Println(in)
+      fmt.Println(in)
     }
   }
   chk(stream.Stop())
