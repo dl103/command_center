@@ -18,7 +18,7 @@ func main() {
   // Setup audio stream
   portaudio.Initialize()
   defer portaudio.Terminate()
-  in := make([]int16, 64)
+  in := make([]byte, 2048)
   stream, err := portaudio.OpenDefaultStream(1, 0, 16000, len(in), in)
 	chk(err)
 	defer stream.Close()
@@ -35,6 +35,10 @@ func main() {
     case <-sig:
       return
     default:
+
+      fmt.Println(detector.ReadAndDetect)
+      // fmt.Println("Flush")
+      // fmt.Println(in)
     }
   }
   chk(stream.Stop())
