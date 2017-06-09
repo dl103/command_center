@@ -3,23 +3,52 @@ package main
 import (
   "fmt"
   "os"
-  // "strconv"
-  // "github.com/HardWareGuy/portaudio-go"
+  "os/signal"
+  "github.com/gordonklaus/portaudio"
   "github.com/brentnd/go-snowboy"
 )
 
 func main() {
-  fmt.Printf("Running recording\n")
-  // fmt.Printf("Version: " + strconv.Itoa(portaudio.Version()) + "\n")
-  // portaudio.Initialize()
-  // deviceInfo, _ := portaudio.DefaultInputDevice()
-  // fmt.Printf("DeviceInfo: %+v\n", deviceInfo)
-  // Look for resource file
-  d := snowboy.NewDetector(os.Args[1])
-	defer d.Close()
+  // Setup Ctrl + C kill signal recognition
+  sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, os.Kill)
+
+  fmt.Println("Running recording. Ctrl-C to quit")
+
+  // Setup audio stream
+  portaudio.Initialize()
+  defer portaudio.Terminate()
+  in := make([]int32, 64)
+  stream, err := portaudio.OpenDefaultStream(1, 0, 44100, len(in), in)
+	chk(err)
+	defer stream.Close()
+  chk(stream.Start())
 
   // use snowboy to listen for hotword
+  detector := SetupSnowboy()
+	defer detector.Close()
 
+  // Loop in stream
+  for {
+    chk(stream.Read())
+    select {
+    case <-sig:
+      return
+    default:
+    }
+  }
+  chk(stream.Stop())
+}
 
-  // beep
+func SetupSnowboy() (d snowboy.Detector) {
+  // Take resource file as argument to NewDetector
+  resourcePath := "~/workspace/go_workspace/src/github.com/Kitt-AI/snowboy/resources/common.res"
+  d = snowboy.NewDetector(resourcePath)
+  return
+}
+
+func chk(err error) {
+  if err != nil {
+    panic(err)
+  }
 }
