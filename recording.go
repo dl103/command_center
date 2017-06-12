@@ -1,9 +1,12 @@
 package main
 
 import (
+  "bytes"
   "fmt"
   "os"
   "os/signal"
+  "time"
+
   "github.com/gordonklaus/portaudio"
   "github.com/brentnd/go-snowboy"
 )
@@ -19,6 +22,7 @@ func main() {
   portaudio.Initialize()
   defer portaudio.Terminate()
   in := make([]byte, 2048)
+  reader := bytes.NewReader(in)
   stream, err := portaudio.OpenDefaultStream(1, 0, 16000, len(in), in)
 	chk(err)
 	defer stream.Close()
@@ -35,19 +39,27 @@ func main() {
     case <-sig:
       return
     default:
-
-      // fmt.Println(detector.ReadAndDetect)
-      // fmt.Println("Flush")
-      fmt.Println(in)
+      fmt.Println(detector.ReadAndDetect(reader))
     }
   }
   chk(stream.Stop())
 }
 
+func handleDetection(result string) {
+  fmt.Println("Detected", result)
+  return
+}
+
 func SetupSnowboy() (d snowboy.Detector) {
-  // Take resource file as argument to NewDetector
-  resourcePath := "~/workspace/go_workspace/src/github.com/Kitt-AI/snowboy/resources/common.res"
-  d = snowboy.NewDetector(resourcePath)
+  snowboyPath := "/Users/david/workspace/go_workspace/src/github.com/Kitt-AI/snowboy"
+  resourceFile := snowboyPath + "/resources/common.res"
+  modelFile := snowboyPath + "/resources/snowboy.umdl"
+
+  d = snowboy.NewDetector(resourceFile)
+	d.HandleFunc(snowboy.NewDefaultHotword(modelFile), handleDetection)
+	d.HandleSilenceFunc(500*time.Millisecond, func(string) {
+		fmt.Println("silence detected")
+	})
   return
 }
 
