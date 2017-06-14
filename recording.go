@@ -22,7 +22,6 @@ func main() {
 	portaudio.Initialize()
 	defer portaudio.Terminate()
 	in := make([]byte, 2048)
-	reader := bytes.NewReader(in)
 	stream, err := portaudio.OpenDefaultStream(1, 0, 16000, len(in), in)
 	chk(err)
 	defer stream.Close()
@@ -39,8 +38,10 @@ func main() {
 		case <-sig:
 			return
 		default:
+			reader := bytes.NewReader(in)
 			detector.ReadAndDetect(reader)
 			// fmt.Println(in)
+			// fmt.Println("Reading buffer")
 		}
 	}
 	chk(stream.Stop())
@@ -59,10 +60,10 @@ func SetupSnowboy() (d snowboy.Detector) {
 	d = snowboy.NewDetector(resourceFile)
 	d.HandleFunc(snowboy.NewDefaultHotword(modelFile), handleDetection)
 	d.HandleSilenceFunc(500*time.Millisecond, func(string) {
-		fmt.Println("silence detected")
+		fmt.Println("Silence detected")
 	})
 
-	// d.SetAudioGain(10)
+	d.SetAudioGain(0.1)
 	return
 }
 
