@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"time"
@@ -30,6 +31,8 @@ func main() {
 	defer stream.Close()
 	chk(stream.Start())
 
+	playSound()
+
 	// use snowboy to listen for hotword
 	detector := SetupSnowboy()
 	defer detector.Close()
@@ -51,6 +54,28 @@ func main() {
 
 func handleDetection(result string) {
 	fmt.Println("Detected", result)
+	return
+}
+
+func playSound() {
+	wavPath := "/Users/david/workspace/go_workspace/src/github.com/dl103/command_center/resources/beep.wav"
+	wavInfo, err := os.Stat(wavPath)
+	chk(err)
+	wavFile, err := os.Open(wavPath)
+	chk(err)
+	wavReader, err := wav.NewReader(wavFile, wavInfo.Size())
+	chk(err)
+
+readLoop:
+	for {
+		s, err := wavReader.ReadRawSample()
+		if err == io.EOF {
+			break readLoop
+		} else if err != nil {
+			panic(err)
+		}
+		fmt.Println(s)
+	}
 	return
 }
 
