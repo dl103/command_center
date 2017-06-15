@@ -33,6 +33,9 @@ func main() {
 	detector := SetupSnowboy()
 	defer detector.Close()
 
+	sampleRate, numChannels, bitDepth := detector.AudioFormat()
+	fmt.Printf("sample rate=%d, num channels=%d, bit depth=%d\n", sampleRate, numChannels, bitDepth)
+
 	// Loop in stream
 	for {
 		chk(stream.Read())
@@ -40,13 +43,9 @@ func main() {
 		case <-sig:
 			return
 		default:
-			t := make([]byte, 2048)
-			reader := bytes.NewReader(t)
-			binary.Read(reader, binary.LittleEndian, in)
-
-			detector.ReadAndDetect(reader)
-			// fmt.Println(in)
-			// fmt.Println("Reading buffer")
+			buf := new(bytes.Buffer)
+			binary.Write(buf, binary.LittleEndian, in)
+			detector.ReadAndDetect(buf)
 		}
 	}
 	chk(stream.Stop())
