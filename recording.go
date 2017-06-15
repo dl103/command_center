@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/brentnd/go-snowboy"
+	"github.com/cryptix/wav"
 	"github.com/gordonklaus/portaudio"
 )
 
