@@ -33,9 +33,6 @@ func main() {
 	detector := SetupSnowboy()
 	defer detector.Close()
 
-	sampleRate, numChannels, bitDepth := detector.AudioFormat()
-	fmt.Printf("sample rate=%d, num channels=%d, bit depth=%d\n", sampleRate, numChannels, bitDepth)
-
 	// Loop in stream
 	for {
 		chk(stream.Read())
