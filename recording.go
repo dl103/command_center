@@ -32,6 +32,7 @@ func main() {
 	// use snowboy to listen for hotword
 	detector := SetupSnowboy()
 	defer detector.Close()
+	buf := new(bytes.Buffer)
 
 	// Loop in stream
 	for {
@@ -40,7 +41,6 @@ func main() {
 		case <-sig:
 			return
 		default:
-			buf := new(bytes.Buffer)
 			binary.Write(buf, binary.LittleEndian, in)
 			detector.ReadAndDetect(buf)
 		}
@@ -63,8 +63,6 @@ func SetupSnowboy() (d snowboy.Detector) {
 	d.HandleSilenceFunc(500*time.Millisecond, func(string) {
 		fmt.Println("Silence detected")
 	})
-
-	d.SetAudioGain(1)
 	return
 }
 
