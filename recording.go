@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	// "io"
 	"os"
 	"os/signal"
 	"time"
@@ -24,7 +23,8 @@ func main() {
 	portaudio.Initialize()
 	defer portaudio.Terminate()
 	in := make([]int16, 2048)
-	stream, err := portaudio.OpenDefaultStream(1, 0, 16000, len(in), in)
+	out := make([]int16, 2048)
+	stream, err := portaudio.OpenDefaultStream(1, 1, 16000, len(in), &in, &out)
 	chk(err)
 	defer stream.Close()
 	chk(stream.Start())
