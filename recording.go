@@ -2,7 +2,9 @@ package main
 
 import (
 	"bytes"
+	"encoding/binary"
 	"fmt"
+	// "io"
 	"os"
 	"os/signal"
 	"time"
@@ -21,7 +23,7 @@ func main() {
 	// Setup audio stream
 	portaudio.Initialize()
 	defer portaudio.Terminate()
-	in := make([]byte, 2048)
+	in := make([]int16, 2048)
 	stream, err := portaudio.OpenDefaultStream(1, 0, 16000, len(in), in)
 	chk(err)
 	defer stream.Close()
@@ -38,7 +40,10 @@ func main() {
 		case <-sig:
 			return
 		default:
-			reader := bytes.NewReader(in)
+			t := make([]byte, 2048)
+			reader := bytes.NewReader(t)
+			binary.Read(reader, binary.LittleEndian, in)
+
 			detector.ReadAndDetect(reader)
 			// fmt.Println(in)
 			// fmt.Println("Reading buffer")
@@ -63,7 +68,7 @@ func SetupSnowboy() (d snowboy.Detector) {
 		fmt.Println("Silence detected")
 	})
 
-	d.SetAudioGain(0.1)
+	d.SetAudioGain(1)
 	return
 }
 
