@@ -31,7 +31,7 @@ func main() {
 	defer stream.Close()
 	chk(stream.Start())
 
-	playSound()
+	playSound(stream, out)
 
 	// use snowboy to listen for hotword
 	detector := SetupSnowboy()
@@ -57,7 +57,7 @@ func handleDetection(result string) {
 	return
 }
 
-func playSound() {
+func playSound(stream *portaudio.Stream, out []int16) {
 	wavPath := "/Users/david/workspace/go_workspace/src/github.com/dl103/command_center/resources/beep.wav"
 	wavInfo, err := os.Stat(wavPath)
 	chk(err)
@@ -74,7 +74,7 @@ readLoop:
 		} else if err != nil {
 			panic(err)
 		}
-		fmt.Println(s)
+		stream.Write()
 	}
 	return
 }
