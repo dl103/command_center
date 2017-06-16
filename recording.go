@@ -25,13 +25,17 @@ func main() {
 	portaudio.Initialize()
 	defer portaudio.Terminate()
 	in := make([]int16, 2048)
-	out := make([]int16, 2048)
-	stream, err := portaudio.OpenDefaultStream(1, 1, 16000, len(in), &in, &out)
+	out := make([]byte, 2)
+	inputStream, err := portaudio.OpenDefaultStream(1, 0, 16000, len(in), &in)
 	chk(err)
-	defer stream.Close()
-	chk(stream.Start())
+	outputStream, err := portaudio.OpenDefaultStream(0, 1, 16000, len(out), &out)
+	chk(err)
+	defer inputStream.Close()
+	defer outputStream.Close()
+	chk(inputStream.Start())
+	chk(outputStream.Start())
 
-	playSound(stream, out)
+	playSound(outputStream, out)
 
 	// use snowboy to listen for hotword
 	detector := SetupSnowboy()
@@ -40,16 +44,16 @@ func main() {
 
 	// Loop in stream
 	for {
-		chk(stream.Read())
+		// chk(inputStream.Read())
 		select {
 		case <-sig:
 			return
 		default:
 			binary.Write(buf, binary.LittleEndian, in)
-			detector.ReadAndDetect(buf)
+			// detector.ReadAndDetect(buf)
 		}
 	}
-	chk(stream.Stop())
+	chk(inputStream.Stop())
 }
 
 func handleDetection(result string) {
@@ -57,24 +61,29 @@ func handleDetection(result string) {
 	return
 }
 
-func playSound(stream *portaudio.Stream, out []int16) {
+func playSound(stream *portaudio.Stream, out []byte) {
 	wavPath := "/Users/david/workspace/go_workspace/src/github.com/dl103/command_center/resources/beep.wav"
 	wavInfo, err := os.Stat(wavPath)
 	chk(err)
 	wavFile, err := os.Open(wavPath)
 	chk(err)
+	fmt.Println(wavInfo)
 	wavReader, err := wav.NewReader(wavFile, wavInfo.Size())
 	chk(err)
 
 readLoop:
 	for {
+		// s, err := wavReader.ReadRawSample()
+		// fmt.Println(s)
 		s, err := wavReader.ReadRawSample()
+		copy(out, s)
+		fmt.Println(out)
 		if err == io.EOF {
 			break readLoop
 		} else if err != nil {
 			panic(err)
 		}
-		stream.Write()
+		chk(stream.Write())
 	}
 	return
 }
