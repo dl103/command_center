@@ -38,7 +38,7 @@ func main() {
 	playSound(outputStream, out)
 
 	// use snowboy to listen for hotword
-	detector := SetupSnowboy(handleDetection)
+	detector := SetupSnowboy()
 	defer detector.Close()
 	buf := new(bytes.Buffer)
 
@@ -83,13 +83,13 @@ readLoop:
 	return
 }
 
-func SetupSnowboy(detectionFunc func()) (d snowboy.Detector) {
+func SetupSnowboy() (d snowboy.Detector) {
 	snowboyPath := "/Users/david/workspace/go_workspace/src/github.com/Kitt-AI/snowboy"
 	resourceFile := snowboyPath + "/resources/common.res"
 	modelFile := snowboyPath + "/resources/snowboy.umdl"
 
 	d = snowboy.NewDetector(resourceFile)
-	d.HandleFunc(snowboy.NewDefaultHotword(modelFile), detectionFunc)
+	d.HandleFunc(snowboy.NewDefaultHotword(modelFile), handleDetection)
 	d.HandleSilenceFunc(500*time.Millisecond, func(string) {
 		fmt.Println("Silence detected")
 	})
