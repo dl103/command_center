@@ -25,7 +25,7 @@ func main() {
 	portaudio.Initialize()
 	defer portaudio.Terminate()
 	in := make([]int16, 2048)
-	out := make([]byte, 2)
+	out := make([]int16, 1)
 	inputStream, err := portaudio.OpenDefaultStream(1, 0, 16000, len(in), &in)
 	chk(err)
 	outputStream, err := portaudio.OpenDefaultStream(0, 1, 16000, len(out), &out)
@@ -61,28 +61,24 @@ func handleDetection(result string) {
 	return
 }
 
-func playSound(stream *portaudio.Stream, out []byte) {
+func playSound(stream *portaudio.Stream, out []int16) {
 	wavPath := "/Users/david/workspace/go_workspace/src/github.com/dl103/command_center/resources/beep.wav"
 	wavInfo, err := os.Stat(wavPath)
 	chk(err)
 	wavFile, err := os.Open(wavPath)
 	chk(err)
-	fmt.Println(wavInfo)
 	wavReader, err := wav.NewReader(wavFile, wavInfo.Size())
 	chk(err)
-
+	outsideBuf := new(bytes.Buffer)
 readLoop:
 	for {
-		// s, err := wavReader.ReadRawSample()
-		// fmt.Println(s)
 		s, err := wavReader.ReadRawSample()
-		copy(out, s)
-		fmt.Println(out)
 		if err == io.EOF {
+			fmt.Println("EOF reached")
 			break readLoop
-		} else if err != nil {
-			panic(err)
 		}
+		chk(binary.Write(outsideBuf, binary.LittleEndian, s))
+		chk(binary.Read(outsideBuf, binary.LittleEndian, out))
 		chk(stream.Write())
 	}
 	return
