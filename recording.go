@@ -74,7 +74,6 @@ readLoop:
 	for {
 		s, err := wavReader.ReadRawSample()
 		if err == io.EOF {
-			fmt.Println("EOF reached")
 			break readLoop
 		}
 		chk(binary.Write(outsideBuf, binary.LittleEndian, s))
