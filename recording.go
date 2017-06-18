@@ -9,8 +9,11 @@ import (
 	"time"
 
 	"github.com/brentnd/go-snowboy"
+	"github.com/dl103/wav-player"
 	"github.com/gordonklaus/portaudio"
 )
+
+var alertSound wavplayer.Player
 
 func main() {
 	// Setup Ctrl + C kill signal recognition
@@ -27,6 +30,8 @@ func main() {
 	chk(err)
 	defer inputStream.Close()
 	chk(inputStream.Start())
+
+	alertSound = wavplayer.NewPlayer("/Users/david/workspace/go_workspace/src/github.com/dl103/command_center/resources/beep.wav")
 
 	// use snowboy to listen for hotword
 	detector := SetupSnowboy()
@@ -49,6 +54,7 @@ func main() {
 
 func handleDetection(result string) {
 	fmt.Println("Detected", result)
+	alertSound.Play()
 	return
 }
 
