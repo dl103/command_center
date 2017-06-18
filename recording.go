@@ -28,7 +28,7 @@ func main() {
 	out := make([]int16, 1)
 	inputStream, err := portaudio.OpenDefaultStream(1, 0, 16000, len(in), &in)
 	chk(err)
-	outputStream, err := portaudio.OpenDefaultStream(0, 1, 16000, len(out), &out)
+	outputStream, err := portaudio.OpenDefaultStream(0, 1, 48000, len(out), &out)
 	chk(err)
 	defer inputStream.Close()
 	defer outputStream.Close()
